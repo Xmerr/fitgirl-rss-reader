@@ -4,8 +4,8 @@ A publisher-only microservice that polls the FitGirl Repacks RSS feed at configu
 
 ## Links
 
-- [GitHub](https://github.com/xmerhq/fitgirl-rss-reader)
-- [Docker Hub](https://hub.docker.com/r/xmerhq/fitgirl-rss-reader)
+- [GitHub](https://github.com/Xmerr/fitgirl-rss-reader)
+- [Docker Hub](https://hub.docker.com/r/xmer/fitgirl-rss-reader)
 
 ## Quick Start
 
@@ -14,7 +14,7 @@ docker run -d \
   -e RABBITMQ_URL=amqp://user:pass@host:5672 \
   -e REDIS_URL=redis://host:6379 \
   -v ./data:/app/data \
-  xmerhq/fitgirl-rss-reader:latest
+  xmer/fitgirl-rss-reader:latest
 ```
 
 ## Docker Compose
@@ -22,7 +22,7 @@ docker run -d \
 ```yaml
 services:
   fitgirl-rss-reader:
-    image: xmerhq/fitgirl-rss-reader:latest
+    image: xmer/fitgirl-rss-reader:latest
     restart: unless-stopped
     environment:
       - RABBITMQ_URL=amqp://user:pass@rabbitmq:5672
