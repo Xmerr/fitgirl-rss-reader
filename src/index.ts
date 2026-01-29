@@ -59,17 +59,17 @@ async function main(): Promise<void> {
 		intervalMs: config.pollIntervalMinutes * 60 * 1000,
 	});
 
-	// Assert exchange-to-exchange binding for notifications
+	// Assert exchanges and binding for notifications
+	await channel.assertExchange(config.exchangeName, "topic", { durable: true });
 	await channel.assertExchange("notifications", "topic", { durable: true });
 	await channel.bindExchange(
 		"notifications",
 		config.exchangeName,
 		"release.new",
 	);
-	logger.info("Exchange-to-exchange binding asserted", {
-		source: config.exchangeName,
-		target: "notifications",
-		routingKey: "release.new",
+	logger.info("RabbitMQ topology asserted", {
+		exchanges: [config.exchangeName, "notifications"],
+		binding: `${config.exchangeName} -> notifications (release.new)`,
 	});
 
 	// Start polling
