@@ -1,0 +1,26 @@
+{
+	"name": "fitgirl-rss-reader",
+	"version": "1.0.0",
+	"description": "RSS reader service that polls FitGirl Repacks feed and publishes releases to RabbitMQ",
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc",
+		"lint": "biome check src/",
+		"lint:fix": "biome check --write src/",
+		"test": "bun test",
+		"test:coverage": "bun test --coverage",
+		"test:feed": "bun run src/scripts/test-feed.ts",
+		"start": "bun run src/index.ts"
+	},
+	"dependencies": {
+		"@xmer/consumer-shared": "^1.0.0",
+		"ioredis": "^5.4.2",
+		"rss-parser": "^3.13.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@types/amqplib": "^0.10.8",
+		"typescript": "^5.7.3"
+	}
+}

@@ -1,0 +1,24 @@
+services:
+  fitgirl-rss-reader:
+    build: .
+    image: xmerhq/fitgirl-rss-reader:latest
+    container_name: fitgirl-rss-reader
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - REDIS_URL=${REDIS_URL}
+      - POLL_INTERVAL_MINUTES=${POLL_INTERVAL_MINUTES:-15}
+      - RSS_FEED_URL=${RSS_FEED_URL:-https://fitgirl-repacks.site/feed/}
+      - EXCHANGE_NAME=${EXCHANGE_NAME:-fitgirl}
+      - STEAM_LOOKUP_TIMEOUT_MS=${STEAM_LOOKUP_TIMEOUT_MS:-5000}
+      - ENRICHMENT_FAILURES_PATH=/app/data/enrichment-failures.jsonl
+      - LOKI_HOST=${LOKI_HOST}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - rabbitmq_network
+
+networks:
+  rabbitmq_network:
+    external: true
