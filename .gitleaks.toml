@@ -1,0 +1,19 @@
+[allowlist]
+description = "Project-specific allowlist for false positives"
+
+# Example/placeholder AMQP connection strings in documentation
+fingerprints = [
+  "e5fbc81029680da7795ac00de85c831b3e38d797:.env.example:amqp-connection-string:2",
+  "e5fbc81029680da7795ac00de85c831b3e38d797:README.md:amqp-connection-string:14",
+  "e5fbc81029680da7795ac00de85c831b3e38d797:README.md:amqp-connection-string:28",
+]
+
+# Allowlist example patterns in .env.example files
+paths = [
+  '''\.env\.example$''',
+]
+
+# Allowlist placeholder credentials
+regexes = [
+  '''amqp://user:pass(word)?@''',
+]
