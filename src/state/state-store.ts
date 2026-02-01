@@ -28,6 +28,13 @@ export class StateStore implements IStateStore {
 		this.log.debug("Marked guid as seen", { guid });
 	}
 
+	async clear(): Promise<number> {
+		const count = await this.redis.scard(REDIS_KEY);
+		await this.redis.del(REDIS_KEY);
+		this.log.info("State cleared", { clearedCount: count });
+		return count;
+	}
+
 	async close(): Promise<void> {
 		await this.redis.quit();
 		this.log.info("Redis connection closed");

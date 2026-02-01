@@ -1,8 +1,14 @@
-import { ConnectionManager, createLogger } from "@xmer/consumer-shared";
+import {
+	ConnectionManager,
+	DlqHandler,
+	createLogger,
+} from "@xmer/consumer-shared";
 import { Redis } from "ioredis";
 import { Config } from "./config/config.js";
+import { ResetConsumer } from "./consumers/reset.consumer.js";
 import { FitGirlPublisher } from "./publishers/fitgirl.publisher.js";
 import { EnrichmentFailureTracker } from "./services/enrichment-failure-tracker.js";
+import { ResetService } from "./services/reset.service.js";
 import { RssPollerService } from "./services/rss-poller.service.js";
 import { SteamService } from "./services/steam.service.js";
 import { StateStore } from "./state/state-store.js";
@@ -72,6 +78,33 @@ async function main(): Promise<void> {
 		routingKey: "release.new",
 	});
 
+	// Initialize reset service and consumer
+	const resetService = new ResetService({
+		stateStore,
+		logger,
+	});
+
+	const resetDlqHandler = new DlqHandler({
+		channel,
+		exchange: config.exchangeName,
+		queue: "fitgirl.reset.rss-reader",
+		serviceName: "fitgirl-rss-reader",
+		logger,
+	});
+
+	const resetConsumer = new ResetConsumer({
+		channel,
+		exchange: config.exchangeName,
+		queue: "fitgirl.reset.rss-reader",
+		routingKey: "reset",
+		dlqHandler: resetDlqHandler,
+		logger,
+		resetService,
+	});
+
+	// Start reset consumer
+	await resetConsumer.start();
+
 	// Start polling
 	publisher.startPolling();
 
@@ -85,6 +118,7 @@ async function main(): Promise<void> {
 		logger.info("Shutting down...");
 
 		publisher.stopPolling();
+		await resetConsumer.stop();
 		await new Promise((resolve) => setTimeout(resolve, 2000));
 		await connectionManager.close();
 		await stateStore.close();
