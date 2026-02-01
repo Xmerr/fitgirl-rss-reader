@@ -1,4 +1,8 @@
-import type { ILogger, IPublisher } from "@xmer/consumer-shared";
+import type {
+	BaseConsumerOptions,
+	ILogger,
+	IPublisher,
+} from "@xmer/consumer-shared";
 import type { Channel } from "amqplib";
 import type { Redis } from "ioredis";
 
@@ -104,6 +108,7 @@ export interface IEnrichmentFailureTracker {
 export interface IStateStore {
 	isNew(guid: string): Promise<boolean>;
 	markSeen(guid: string): Promise<void>;
+	clear(): Promise<number>;
 	close(): Promise<void>;
 }
 
@@ -157,3 +162,27 @@ export interface IConfig {
 	lokiHost?: string;
 	logLevel: string;
 }
+
+// Reset Message Types
+export interface ResetMessage {
+	source: string;
+	timestamp: string;
+	target?: "rss-reader" | "discord-notifier" | "all";
+	reason?: string;
+}
+
+export interface IResetService {
+	handleReset(message: ResetMessage): Promise<void>;
+}
+
+export interface ResetServiceOptions {
+	stateStore: IStateStore;
+	logger: ILogger;
+}
+
+export interface ResetConsumerOptions extends BaseConsumerOptions {
+	resetService: IResetService;
+}
+
+// Re-export BaseConsumerOptions for convenience
+export type { BaseConsumerOptions } from "@xmer/consumer-shared";

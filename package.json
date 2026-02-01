@@ -1,6 +1,6 @@
 {
 	"name": "fitgirl-rss-reader",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "RSS reader service that polls FitGirl Repacks feed and publishes releases to RabbitMQ",
 	"type": "module",
 	"main": "dist/index.js",

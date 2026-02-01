@@ -16,6 +16,8 @@ describe("StateStore", () => {
 		sismember: ReturnType<typeof mock>;
 		sadd: ReturnType<typeof mock>;
 		expire: ReturnType<typeof mock>;
+		scard: ReturnType<typeof mock>;
+		del: ReturnType<typeof mock>;
 		quit: ReturnType<typeof mock>;
 	};
 
@@ -24,6 +26,8 @@ describe("StateStore", () => {
 			sismember: mock(() => Promise.resolve(0)),
 			sadd: mock(() => Promise.resolve(1)),
 			expire: mock(() => Promise.resolve(1)),
+			scard: mock(() => Promise.resolve(5)),
+			del: mock(() => Promise.resolve(1)),
 			quit: mock(() => Promise.resolve("OK")),
 		};
 
@@ -110,6 +114,44 @@ describe("StateStore", () => {
 
 			// Assert
 			expect(mockLogger.debug).toHaveBeenCalled();
+		});
+	});
+
+	describe("clear", () => {
+		it("should delete the redis key and return count", async () => {
+			// Arrange
+			mockRedis.scard.mockResolvedValueOnce(10);
+
+			// Act
+			const result = await stateStore.clear();
+
+			// Assert
+			expect(result).toBe(10);
+			expect(mockRedis.scard).toHaveBeenCalledWith(
+				"fitgirl-rss-reader:seen-guids",
+			);
+			expect(mockRedis.del).toHaveBeenCalledWith(
+				"fitgirl-rss-reader:seen-guids",
+			);
+		});
+
+		it("should return 0 when set is empty", async () => {
+			// Arrange
+			mockRedis.scard.mockResolvedValueOnce(0);
+
+			// Act
+			const result = await stateStore.clear();
+
+			// Assert
+			expect(result).toBe(0);
+		});
+
+		it("should log the clear operation", async () => {
+			// Act
+			await stateStore.clear();
+
+			// Assert
+			expect(mockLogger.info).toHaveBeenCalled();
 		});
 	});
 
