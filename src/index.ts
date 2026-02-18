@@ -6,10 +6,13 @@ import {
 import { Redis } from "ioredis";
 import { Config } from "./config/config.js";
 import { ResetConsumer } from "./consumers/reset.consumer.js";
+import { SteamRefreshConsumer } from "./consumers/steam-refresh.consumer.js";
 import { FitGirlPublisher } from "./publishers/fitgirl.publisher.js";
+import { SteamRefreshPublisher } from "./publishers/steam-refresh.publisher.js";
 import { EnrichmentFailureTracker } from "./services/enrichment-failure-tracker.js";
 import { ResetService } from "./services/reset.service.js";
 import { RssPollerService } from "./services/rss-poller.service.js";
+import { SteamRefreshService } from "./services/steam-refresh.service.js";
 import { SteamService } from "./services/steam.service.js";
 import { StateStore } from "./state/state-store.js";
 
@@ -89,8 +92,40 @@ async function main(): Promise<void> {
 		resetService,
 	});
 
-	// Start reset consumer
+	// Initialize steam refresh publisher, service, and consumer
+	const steamRefreshPublisher = new SteamRefreshPublisher({
+		channel,
+		exchange: config.exchangeName,
+		logger,
+	});
+
+	const steamRefreshService = new SteamRefreshService({
+		steamService,
+		publisher: steamRefreshPublisher,
+		logger,
+	});
+
+	const steamRefreshDlqHandler = new DlqHandler({
+		channel,
+		exchange: config.exchangeName,
+		queue: "fitgirl.steam.refresh.rss-reader",
+		serviceName: "fitgirl-rss-reader",
+		logger,
+	});
+
+	const steamRefreshConsumer = new SteamRefreshConsumer({
+		channel,
+		exchange: config.exchangeName,
+		queue: "fitgirl.steam.refresh.rss-reader",
+		routingKey: "steam.refresh",
+		dlqHandler: steamRefreshDlqHandler,
+		logger,
+		steamRefreshService,
+	});
+
+	// Start consumers
 	await resetConsumer.start();
+	await steamRefreshConsumer.start();
 
 	// Start polling
 	publisher.startPolling();
@@ -106,6 +141,7 @@ async function main(): Promise<void> {
 
 		publisher.stopPolling();
 		await resetConsumer.stop();
+		await steamRefreshConsumer.stop();
 		await new Promise((resolve) => setTimeout(resolve, 2000));
 		await connectionManager.close();
 		await stateStore.close();

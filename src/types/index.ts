@@ -184,5 +184,42 @@ export interface ResetConsumerOptions extends BaseConsumerOptions {
 	resetService: IResetService;
 }
 
+// Steam Refresh Types
+export interface SteamRefreshMessage {
+	gameId: number;
+	correctedName: string;
+	timestamp: string;
+}
+
+export interface SteamEnrichedMessage {
+	gameId: number;
+	steam: SteamData | null;
+	timestamp: string;
+}
+
+export interface ISteamRefreshService {
+	handleRefresh(message: SteamRefreshMessage): Promise<void>;
+}
+
+export interface SteamRefreshServiceOptions {
+	steamService: ISteamService;
+	publisher: ISteamRefreshPublisher;
+	logger: ILogger;
+}
+
+export interface ISteamRefreshPublisher extends IPublisher {
+	publishEnriched(message: SteamEnrichedMessage): Promise<void>;
+}
+
+export interface SteamRefreshPublisherOptions {
+	channel: Channel;
+	exchange: string;
+	logger: ILogger;
+}
+
+export interface SteamRefreshConsumerOptions extends BaseConsumerOptions {
+	steamRefreshService: ISteamRefreshService;
+}
+
 // Re-export BaseConsumerOptions for convenience
 export type { BaseConsumerOptions } from "@xmer/consumer-shared";
